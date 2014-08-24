@@ -1,0 +1,51 @@
+---
+title: "pml-final"
+author: "Joel Wattacheril"
+date: "August 24, 2014"
+output: html_document
+---
+Practical Machine Learning: Final
+====
+
+
+### Summary
+The purpose of this project is to train a model with the values obtained from Nike Fuelband data.  The data was provided by Groupware as part of their HAR (Human Activity Research).  The dataset is a compilation of six male participants who performed weight lifting exercises in a specific manner.  There are 5 groups,A-E, where each group is performing the weight lifting task in a predetermined way.  The prediction of the test data was 95% accurate and correctly identified 19 out of 20 of the test cases.
+
+### R code
+
+```{r eval=FALSE}
+library(caret)
+library(kernlab)
+
+# Set working directory to file storage area
+source("pml_write_files.R")
+setwd("~/Documents/Online Classes/Coursera/Practical Machine Learning/")
+
+# Read in training data
+training = read.csv("pml-training.csv")
+# Read in test data
+testing = read.csv("pml-testing.csv")
+
+# Cleaning process for both variables (testing and training)
+clean_train = training[, colSums(is.na(training)) ==0]
+clean_test = testing[, colSums(is.na(testing)) == 0]
+
+# Some rough filtering using correlations between the variables
+M = abs(cor(clean_train[,8:59]))
+diag(M) = 0
+
+# Trying a few models with the clean training data
+modelfit = train(clean_train$classe ~ ., method='knn', preProcess='pca',data=clean_train)
+# Making our predictions using the chosen model
+predClasse = predict(modelfit,clean_test)
+# Write out our predictions to files for submission
+pml_write_files(predClasse)
+```
+
+## Conclusion
+
+The best algorithm tested for the training process was the **knn** which was used in the method for our model.  Some other notable methods used were **ada, glm, svmLinear** of which some of these didn't run properly because of the differences between the training and test data.  
+
+The predicted outcome was very good for a first run.  Out of the 20 test cases, our model predicted 19 of them correctly.  One note, trying some of these algorithms require a lot of processing time and due to time contraints I was not able to exhaustively test other algorithms to get a perfect prediction model. Going forward I would like to test using **rknn, boosting algorithms, and possibly a neural network**.  
+
+95% was satisfactory considering the time frame and a lack of knowledge of the vast amount of algorithms available.  **KNN** appears to be a good predictor for classification type problems where clustering can be effeciently accomplished. 
